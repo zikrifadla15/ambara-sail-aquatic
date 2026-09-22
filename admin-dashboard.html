@@ -6,116 +6,238 @@
 <title>Admin Dashboard - Ambara Sail Aquatic</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#17324d}
-header{background:#0b5fa5;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0;font-size:21px}button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600}
-.logout{background:#fff;color:#0b5fa5}.wrap{max-width:1200px;margin:auto;padding:22px}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #00000010}.card b{font-size:28px;display:block;margin-top:8px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{background:#dcecf8;color:#124c73}.tab.active{background:#0b5fa5;color:#fff}
-.panel{display:none;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #00000010}.panel.active{display:block}
-.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap}.primary{background:#0b5fa5;color:#fff}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px;border-bottom:1px solid #e5eaf0;text-align:left}th{background:#f3f7fa}
-.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}input,select,textarea{width:100%;padding:10px;border:1px solid #ccd7e0;border-radius:8px}textarea{min-height:80px}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{background:#fff;max-width:650px;width:100%;border-radius:12px;padding:20px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-.small{font-size:13px;color:#647789}.danger{background:#ffe3e3;color:#a11}.edit{background:#e5f2ff;color:#07558c}
-@media(max-width:800px){.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}table{display:block;overflow:auto}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#0877c9;color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:22px}button{border:0;border-radius:8px;padding:9px 13px;cursor:pointer;font-weight:600}
+.logout{background:#fff;color:#0877c9}.wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tab{background:#fff;color:#0877c9;border:1px solid #d9e3ef}.tab.active{background:#0877c9;color:#fff}
+.panel{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 2px 10px #0000000b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.card{padding:18px;border-radius:10px;background:#eef7ff}.card b{display:block;font-size:28px;margin-top:5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ccd7e3;border-radius:8px;margin-top:5px}
+label{font-size:13px;font-weight:600}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.primary{background:#0877c9;color:white}.secondary{background:#e8f0f7;color:#24506f}.danger{background:#d9534f;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:15px;min-width:850px}th,td{border-bottom:1px solid #e5ebf1;padding:10px;text-align:left;font-size:14px}th{background:#f5f8fb}
+.table-wrap{overflow:auto}.hidden{display:none}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:15px;z-index:10}
+.modal-box{background:#fff;border-radius:14px;padding:22px;width:min(700px,100%);max-height:90vh;overflow:auto}.modal-head{display:flex;justify-content:space-between;align-items:center}
+.msg{margin-top:12px;padding:10px;border-radius:8px;background:#eef7ff}.error{background:#fff0f0;color:#a00000}
 </style>
 </head>
 <body>
-<header><h1>🏊 Ambara Sail Aquatic — Admin Dashboard</h1><button class="logout" onclick="logout()">Logout</button></header>
+<header>
+<h1>Ambara Sail Aquatic — Admin Dashboard</h1>
+<button class="logout" id="logoutBtn">Keluar</button>
+</header>
+
 <div class="wrap">
-<div id="msg" class="small"></div>
-<div class="cards">
-<div class="card">👨‍🎓 Total Siswa<b id="cStudents">0</b></div>
-<div class="card">🏊 Total Coach<b id="cCoaches">0</b></div>
-<div class="card">📅 Jadwal<b id="cSchedules">0</b></div>
-<div class="card">💰 Pembayaran<b id="cPayments">0</b></div>
-</div>
 <div class="tabs">
-<button class="tab active" data-panel="students">👨‍🎓 Data Siswa</button>
-<button class="tab" data-panel="coaches">🏊 Coach</button>
-<button class="tab" data-panel="schedules">📅 Jadwal</button>
-<button class="tab" data-panel="attendance">✅ Absensi</button>
-<button class="tab" data-panel="payments">💰 Pembayaran</button>
+<button class="tab active" data-tab="dashboard">Dashboard</button>
+<button class="tab" data-tab="students">Data Siswa</button>
+<button class="tab" data-tab="coaches">Coach</button>
+<button class="tab" data-tab="schedules">Jadwal</button>
+<button class="tab" data-tab="attendance">Absensi</button>
+<button class="tab" data-tab="payments">Pembayaran</button>
 </div>
 
-<section id="students" class="panel active">
-<div class="toolbar"><h2>Data Siswa</h2><button class="primary" onclick="openModal('student')">+ Tambah Siswa</button></div>
-<table><thead><tr><th>Nama</th><th>Orang Tua</th><th>WhatsApp</th><th>Program</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="studentRows"></tbody></table>
+<section id="dashboard" class="panel tab-content">
+<h2>Dashboard</h2>
+<div class="grid">
+<div class="card">Total Siswa<b id="countStudents">0</b></div>
+<div class="card">Coach<b id="countCoaches">0</b></div>
+<div class="card">Jadwal<b id="countSchedules">0</b></div>
+<div class="card">Pembayaran<b id="countPayments">0</b></div>
+</div>
 </section>
 
-<section id="coaches" class="panel">
-<div class="toolbar"><h2>Data Coach</h2><button class="primary" onclick="openModal('coach')">+ Tambah Coach</button></div>
-<table><thead><tr><th>Nama</th><th>WhatsApp</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="coachRows"></tbody></table>
-</section>
-
-<section id="schedules" class="panel">
-<div class="toolbar"><h2>Jadwal</h2><button class="primary" onclick="openModal('schedule')">+ Tambah Jadwal</button></div>
-<table><thead><tr><th>Tanggal</th><th>Jam</th><th>Siswa</th><th>Coach</th><th>Lokasi</th><th>Status</th></tr></thead><tbody id="scheduleRows"></tbody></table>
-</section>
-
-<section id="attendance" class="panel">
-<div class="toolbar"><h2>Absensi</h2><button class="primary" onclick="openModal('attendance')">+ Catat Absensi</button></div>
-<table><thead><tr><th>Tanggal</th><th>Siswa</th><th>Status</th><th>Catatan</th></tr></thead><tbody id="attendanceRows"></tbody></table>
-</section>
-
-<section id="payments" class="panel">
-<div class="toolbar"><h2>Pembayaran</h2><button class="primary" onclick="openModal('payment')">+ Tambah Pembayaran</button></div>
-<table><thead><tr><th>Tanggal</th><th>Siswa</th><th>Nominal</th><th>Metode</th><th>Paket</th><th>Status</th></tr></thead><tbody id="paymentRows"></tbody></table>
-</section>
+<section id="students" class="panel tab-content hidden">
+<h2>Data Siswa</h2>
+<div class="panel" style="padding:15px;background:#f8fbff">
+<h3>Tambah Siswa</h3>
+<form id="studentForm">
+<div class="form-grid">
+<div><label>Nama Siswa *</label><input id="s_name" required></div>
+<div><label>No. HP</label><input id="s_phone"></div>
+<div><label>Nama Orang Tua</label><input id="s_parent"></div>
+<div><label>Alamat</label><input id="s_address"></div>
+<div><label>Program</label><select id="s_program"><option value="">Pilih</option><option>Privat</option><option>Semi Privat</option><option>Group Class</option></select></div>
+<div><label>Paket</label><input id="s_package" placeholder="Contoh: 4x Pertemuan"></div>
+<div><label>Status</label><select id="s_status"><option>aktif</option><option>nonaktif</option></select></div>
+<div><label>Catatan</label><input id="s_notes"></div>
+</div>
+<div class="actions"><button class="primary" type="submit">+ Tambah Siswa</button></div>
+<div id="studentMsg"></div>
+</form>
 </div>
 
-<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle">Tambah Data</h2><div id="form"></div><div class="actions"><button onclick="closeModal()">Batal</button><button class="primary" onclick="saveModal()">Simpan</button></div></div></div>
+<div class="table-wrap">
+<table><thead><tr>
+<th>Nama</th><th>No. HP</th><th>Orang Tua</th><th>Program</th><th>Paket</th><th>Status</th><th>Aksi</th>
+</tr></thead><tbody id="studentsBody"></tbody></table>
+</div>
+</section>
+
+<section id="coaches" class="panel tab-content hidden"><h2>Coach</h2><p>Fitur Coach tetap tersedia pada dashboard sebelumnya.</p></section>
+<section id="schedules" class="panel tab-content hidden"><h2>Jadwal</h2><p>Fitur Jadwal tetap tersedia pada dashboard sebelumnya.</p></section>
+<section id="attendance" class="panel tab-content hidden"><h2>Absensi</h2><p>Fitur Absensi tetap tersedia pada dashboard sebelumnya.</p></section>
+<section id="payments" class="panel tab-content hidden"><h2>Pembayaran</h2><p>Fitur Pembayaran tetap tersedia pada dashboard sebelumnya.</p></section>
+</div>
+
+<div id="editModal" class="modal hidden">
+<div class="modal-box">
+<div class="modal-head"><h2>Edit Data Siswa</h2><button class="secondary" id="closeModal">✕</button></div>
+<form id="editForm">
+<input type="hidden" id="e_id">
+<div class="form-grid">
+<div><label>Nama Siswa *</label><input id="e_name" required></div>
+<div><label>No. HP</label><input id="e_phone"></div>
+<div><label>Nama Orang Tua</label><input id="e_parent"></div>
+<div><label>Alamat</label><input id="e_address"></div>
+<div><label>Program</label><select id="e_program"><option value="">Pilih</option><option>Privat</option><option>Semi Privat</option><option>Group Class</option></select></div>
+<div><label>Paket</label><input id="e_package"></div>
+<div><label>Status</label><select id="e_status"><option>aktif</option><option>nonaktif</option></select></div>
+<div><label>Catatan</label><input id="e_notes"></div>
+</div>
+<div class="actions">
+<button class="primary" type="submit">Simpan Perubahan</button>
+<button class="secondary" type="button" id="cancelEdit">Batal</button>
+</div>
+<div id="editMsg"></div>
+</form>
+</div>
+</div>
 
 <script>
-const SUPABASE_URL="https://kahyuedvhhkeezolnkeh.supabase.co";
-const SUPABASE_KEY="sb_publishable_qaQ1yUb1JsF_nJRbY2b6mw_o0z9weT4";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentType=""; let students=[],coaches=[];
+const SUPABASE_URL = "https://kahyuedvhhkeezolnkeh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qaQ1yUb1JsF_nJRbY2b6mw_o0z9weT4";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function check(){const {data:{user}}=await db.auth.getUser();if(!user){location.href="admin.html";return false}return true}
-function msg(t){document.getElementById("msg").textContent=t}
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.panel).classList.add("active")});
-async function load(){
- if(!(await check()))return;
- const [s,c,sc,a,p]=await Promise.all([
-  db.from("students").select("*").order("created_at",{ascending:false}),
-  db.from("coaches").select("*").order("created_at",{ascending:false}),
-  db.from("schedules").select("*,students(name),coaches(name)").order("date",{ascending:false}),
-  db.from("attendance").select("*,students(name)").order("attendance_date",{ascending:false}),
-  db.from("payments").select("*,students(name)").order("payment_date",{ascending:false})
- ]);
- students=s.data||[]; coaches=c.data||[];
- document.getElementById("cStudents").textContent=students.length;
- document.getElementById("cCoaches").textContent=coaches.length;
- document.getElementById("cSchedules").textContent=(sc.data||[]).length;
- document.getElementById("cPayments").textContent=(p.data||[]).length;
- renderStudents();renderCoaches();renderSchedules(sc.data||[]);renderAttendance(a.data||[]);renderPayments(p.data||[]);
+const $ = id => document.getElementById(id);
+let studentsCache = [];
+
+async function checkAuth(){
+  const {data:{user}} = await db.auth.getUser();
+  if(!user){ location.href="admin.html"; return false; }
+  return true;
 }
-const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-function renderStudents(){studentRows.innerHTML=students.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.parent_name)}</td><td>${esc(x.phone)}</td><td>${esc(x.program)}</td><td>${esc(x.package)}</td><td>${esc(x.status)}</td><td><button class="danger" onclick="del('students','${x.id}')">Hapus</button></td></tr>`).join("")||'<tr><td colspan="7">Belum ada data siswa.</td></tr>'}
-function renderCoaches(){coachRows.innerHTML=coaches.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.specialization)}</td><td>${esc(x.status)}</td><td><button class="danger" onclick="del('coaches','${x.id}')">Hapus</button></td></tr>`).join("")||'<tr><td colspan="5">Belum ada coach.</td></tr>'}
-function renderSchedules(a){scheduleRows.innerHTML=a.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.start_time)}${x.end_time?" - "+esc(x.end_time):""}</td><td>${esc(x.students?.name)}</td><td>${esc(x.coaches?.name)}</td><td>${esc(x.location)}</td><td>${esc(x.status)}</td></tr>`).join("")||'<tr><td colspan="6">Belum ada jadwal.</td></tr>'}
-function renderAttendance(a){attendanceRows.innerHTML=a.map(x=>`<tr><td>${esc(x.attendance_date)}</td><td>${esc(x.students?.name)}</td><td>${esc(x.status)}</td><td>${esc(x.notes)}</td></tr>`).join("")||'<tr><td colspan="4">Belum ada absensi.</td></tr>'}
-function renderPayments(a){paymentRows.innerHTML=a.map(x=>`<tr><td>${esc(x.payment_date)}</td><td>${esc(x.students?.name)}</td><td>Rp ${Number(x.amount||0).toLocaleString("id-ID")}</td><td>${esc(x.payment_method)}</td><td>${esc(x.package)}</td><td>${esc(x.status)}</td></tr>`).join("")||'<tr><td colspan="6">Belum ada pembayaran.</td></tr>'}
-function openModal(t){currentType=t;modal.classList.add("show");let f="";
-if(t==="student"){modalTitle.textContent="Tambah Siswa";f=`<div class="formgrid"><input id="name" placeholder="Nama siswa*" required><input id="parent_name" placeholder="Nama orang tua"><input id="phone" placeholder="No. WhatsApp"><input id="program" placeholder="Program (Privat/Semi Privat/Group)"><input id="package" placeholder="Paket"><input id="address" placeholder="Alamat"><select id="status"><option>aktif</option><option>nonaktif</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
-if(t==="coach"){modalTitle.textContent="Tambah Coach";f=`<div class="formgrid"><input id="name" placeholder="Nama coach*" required><input id="phone" placeholder="No. WhatsApp"><input id="specialization" placeholder="Spesialisasi"><select id="status"><option>aktif</option><option>nonaktif</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
-if(t==="schedule"){modalTitle.textContent="Tambah Jadwal";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><select id="coach_id"><option value="">Tanpa coach</option>${coaches.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="date" type="date"><input id="start_time" type="time"><input id="end_time" type="time"><input id="location" placeholder="Lokasi"><input id="program" placeholder="Program"><select id="status"><option>terjadwal</option><option>selesai</option><option>batal</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
-if(t==="attendance"){modalTitle.textContent="Catat Absensi";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="attendance_date" type="date" value="${new Date().toISOString().slice(0,10)}"><select id="status"><option>hadir</option><option>izin</option><option>sakit</option><option>alpa</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
-if(t==="payment"){modalTitle.textContent="Tambah Pembayaran";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="payment_date" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="amount" type="number" placeholder="Nominal"><input id="payment_method" placeholder="Transfer/Cash"><input id="package" placeholder="Paket"><select id="status"><option>lunas</option><option>belum</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
-form.innerHTML=f}
-function closeModal(){modal.classList.remove("show")}
-const v=id=>document.getElementById(id)?.value||"";
-async function saveModal(){let data,table;if(currentType==="student"){table="students";data={name:v("name"),parent_name:v("parent_name"),phone:v("phone"),program:v("program"),package:v("package"),address:v("address"),status:v("status"),notes:v("notes")}}
-else if(currentType==="coach"){table="coaches";data={name:v("name"),phone:v("phone"),specialization:v("specialization"),status:v("status"),notes:v("notes")}}
-else if(currentType==="schedule"){table="schedules";data={student_id:v("student_id"),coach_id:v("coach_id")||null,date:v("date"),start_time:v("start_time"),end_time:v("end_time")||null,location:v("location"),program:v("program"),status:v("status"),notes:v("notes")}}
-else if(currentType==="attendance"){table="attendance";data={student_id:v("student_id"),attendance_date:v("attendance_date"),status:v("status"),notes:v("notes")}}
-else {table="payments";data={student_id:v("student_id"),payment_date:v("payment_date"),amount:Number(v("amount")),payment_method:v("payment_method"),package:v("package"),status:v("status"),notes:v("notes")}}
-const {error}=await db.from(table).insert(data);if(error){alert(error.message);return}closeModal();load()}
-async function del(table,id){if(!confirm("Hapus data ini?"))return;const {error}=await db.from(table).delete().eq("id",id);if(error)alert(error.message);else load()}
-async function logout(){await db.auth.signOut();location.href="admin.html"}
-load();
+
+function showMsg(id,text,error=false){
+  $(id).className = "msg"+(error?" error":"");
+  $(id).textContent=text;
+}
+
+async function loadStudents(){
+  const {data,error} = await db.from("students").select("*").order("created_at",{ascending:false});
+  if(error){ showMsg("studentMsg",error.message,true); return; }
+  studentsCache=data||[];
+  $("studentsBody").innerHTML = studentsCache.map(s => `
+    <tr>
+      <td><b>${esc(s.name)}</b></td>
+      <td>${esc(s.phone||"-")}</td>
+      <td>${esc(s.parent_name||"-")}</td>
+      <td>${esc(s.program||"-")}</td>
+      <td>${esc(s.package||"-")}</td>
+      <td>${esc(s.status||"-")}</td>
+      <td>
+        <button class="secondary" onclick="openEdit('${s.id}')">✏️ Edit</button>
+        <button class="danger" onclick="deleteStudent('${s.id}')">🗑️ Hapus</button>
+      </td>
+    </tr>`).join("");
+  $("countStudents").textContent=studentsCache.length;
+}
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+$("studentForm").addEventListener("submit", async e=>{
+ e.preventDefault();
+ const row={
+  name:$("s_name").value.trim(),
+  phone:$("s_phone").value.trim(),
+  parent_name:$("s_parent").value.trim(),
+  address:$("s_address").value.trim(),
+  program:$("s_program").value,
+  package:$("s_package").value.trim(),
+  status:$("s_status").value,
+  notes:$("s_notes").value.trim()
+ };
+ const {error}=await db.from("students").insert(row);
+ if(error){showMsg("studentMsg",error.message,true);return;}
+ e.target.reset(); $("s_status").value="aktif";
+ showMsg("studentMsg","Siswa berhasil ditambahkan.");
+ await loadStudents(); await updateCounts();
+});
+
+window.openEdit = function(id){
+ const s=studentsCache.find(x=>x.id===id);
+ if(!s)return;
+ $("e_id").value=s.id;
+ $("e_name").value=s.name||"";
+ $("e_phone").value=s.phone||"";
+ $("e_parent").value=s.parent_name||"";
+ $("e_address").value=s.address||"";
+ $("e_program").value=s.program||"";
+ $("e_package").value=s.package||"";
+ $("e_status").value=s.status||"aktif";
+ $("e_notes").value=s.notes||"";
+ $("editMsg").textContent="";
+ $("editModal").classList.remove("hidden");
+};
+
+function closeEdit(){$("editModal").classList.add("hidden");}
+$("closeModal").onclick=closeEdit;
+$("cancelEdit").onclick=closeEdit;
+
+$("editForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const id=$("e_id").value;
+ const row={
+  name:$("e_name").value.trim(),
+  phone:$("e_phone").value.trim(),
+  parent_name:$("e_parent").value.trim(),
+  address:$("e_address").value.trim(),
+  program:$("e_program").value,
+  package:$("e_package").value.trim(),
+  status:$("e_status").value,
+  notes:$("e_notes").value.trim()
+ };
+ const {error}=await db.from("students").update(row).eq("id",id);
+ if(error){showMsg("editMsg",error.message,true);return;}
+ showMsg("editMsg","Data siswa berhasil diperbarui.");
+ await loadStudents(); await updateCounts();
+ setTimeout(closeEdit,500);
+});
+
+window.deleteStudent=async function(id){
+ const s=studentsCache.find(x=>x.id===id);
+ if(!s)return;
+ if(!confirm("Hapus siswa \""+s.name+"\"?"))return;
+ const {error}=await db.from("students").delete().eq("id",id);
+ if(error){showMsg("studentMsg",error.message,true);return;}
+ showMsg("studentMsg","Siswa berhasil dihapus.");
+ await loadStudents(); await updateCounts();
+};
+
+async function updateCounts(){
+ const tables=[["coaches","countCoaches"],["schedules","countSchedules"],["payments","countPayments"]];
+ for(const [table,id] of tables){
+  const {count}=await db.from(table).select("*",{count:"exact",head:true});
+  $(id).textContent=count??0;
+ }
+}
+
+document.querySelectorAll(".tab").forEach(btn=>{
+ btn.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(x=>x.classList.add("hidden"));
+  btn.classList.add("active"); $(btn.dataset.tab).classList.remove("hidden");
+ };
+});
+
+$("logoutBtn").onclick=async()=>{await db.auth.signOut();location.href="admin.html";};
+
+(async()=>{if(await checkAuth()){await loadStudents();await updateCounts();}})();
 </script>
 </body>
 </html>
