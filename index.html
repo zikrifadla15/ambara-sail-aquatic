@@ -14,7 +14,7 @@
       <button class="menu" onclick="toggleMenu()">☰</button>
       <div id="navLinks" class="nav-links">
         <a href="#beranda">Beranda</a><a href="#program">Program</a><a href="#harga">Harga</a>
-        <a href="#jadwal">Jadwal</a><a href="#lokasi">Lokasi</a><a href="#daftar">Daftar</a>
+        <a href="#jadwal">Jadwal</a><a href="#lokasi">Lokasi</a><a href="#daftar">Daftar</a><a href="admin.html">Admin</a>
       </div>
     </nav>
     <div id="beranda" class="hero-content">
@@ -74,9 +74,10 @@
     <section id="daftar" class="section register">
       <div class="register-box">
         <div><p class="eyebrow">PENDAFTARAN</p><h2>Siap mulai belajar renang?</h2><p>Isi formulir singkat, lalu kirim data pendaftaran melalui WhatsApp.</p></div>
-        <form onsubmit="sendWhatsApp(event)">
+        <form onsubmit="registerStudent(event)">
           <input id="nama" required placeholder="Nama peserta">
-          <input id="usia" required placeholder="Usia">
+          <input id="usia" type="number" min="1" max="100" required placeholder="Usia">
+          <input id="telepon" placeholder="No. WhatsApp">
           <select id="programSelect"><option>Privat</option><option>Semi Privat</option><option>Group Class</option></select>
           <select id="lokasiSelect"><option>Modernland</option><option>Pabuaran Residence</option></select>
           <button class="btn primary" type="submit">Daftar via WhatsApp</button>
@@ -86,6 +87,7 @@
   </main>
 
   <footer><b>Ambara Sail Aquatic</b><span>Learn • Swim • Grow</span><a href="https://play.google.com/" target="_blank">Download aplikasi di PlayStore</a></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
