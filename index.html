@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b5ed7">
+  <title>Ambara Sail Aquatic</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <nav>
+      <div class="brand"><span class="logo-mark">ASA</span><span>Ambara Sail Aquatic</span></div>
+      <button class="menu" onclick="toggleMenu()">☰</button>
+      <div id="navLinks" class="nav-links">
+        <a href="#beranda">Beranda</a><a href="#program">Program</a><a href="#harga">Harga</a>
+        <a href="#jadwal">Jadwal</a><a href="#lokasi">Lokasi</a><a href="#daftar">Daftar</a>
+      </div>
+    </nav>
+    <div id="beranda" class="hero-content">
+      <div>
+        <p class="eyebrow">SWIMMING LESSON • TANGERANG</p>
+        <h1>Belajar Renang<br><span>Lebih Percaya Diri.</span></h1>
+        <p class="lead">Program latihan renang untuk anak dan dewasa dengan pilihan privat, semi privat, dan group class.</p>
+        <div class="actions">
+          <a class="btn primary" href="#daftar">Daftar Sekarang</a>
+          <a class="btn ghost" href="#harga">Lihat Harga</a>
+        </div>
+      </div>
+      <div class="wave-card">
+        <div class="swimmer">🏊</div>
+        <div><b>Ambara Sail Aquatic</b><small>Learn • Swim • Grow</small></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="program" class="section">
+      <div class="section-head"><p class="eyebrow">PROGRAM</p><h2>Pilih program yang sesuai</h2></div>
+      <div class="cards">
+        <article class="card"><div class="icon">🏊‍♂️</div><h3>Privat</h3><p>Latihan lebih fokus dengan pendampingan coach.</p></article>
+        <article class="card"><div class="icon">👥</div><h3>Semi Privat</h3><p>Belajar bersama teman dengan suasana lebih interaktif.</p></article>
+        <article class="card"><div class="icon">🌊</div><h3>Group Class</h3><p>Latihan berkelompok untuk membangun teknik dan kepercayaan diri.</p></article>
+      </div>
+    </section>
+
+    <section id="harga" class="section alt">
+      <div class="section-head"><p class="eyebrow">PRICELIST</p><h2>Harga latihan</h2></div>
+      <div class="price-grid">
+        <div class="price-card"><h3>Privat</h3><div class="price-row"><span>4x pertemuan</span><b>Rp550.000</b></div><div class="price-row"><span>8x pertemuan</span><b>Rp1.000.000</b></div></div>
+        <div class="price-card"><h3>Semi Privat</h3><div class="price-row"><span>4x pertemuan</span><b>Rp450.000</b></div><div class="price-row"><span>8x pertemuan</span><b>Rp850.000</b></div></div>
+        <div class="price-card"><h3>Group Class</h3><div class="price-row"><span>4x pertemuan</span><b>Rp350.000</b></div></div>
+      </div>
+      <div class="note">Tiket masuk sudah tercover, belum termasuk pendamping (jika ada).</div>
+    </section>
+
+    <section id="jadwal" class="section">
+      <div class="section-head"><p class="eyebrow">JADWAL</p><h2>Waktu latihan</h2></div>
+      <div class="schedule">
+        <div><b>Selasa</b><span>15.00 &nbsp;•&nbsp; 16.00</span></div>
+        <div><b>Minggu pagi</b><span>07.00 &nbsp;•&nbsp; 08.00 &nbsp;•&nbsp; 09.00</span></div>
+        <div><b>Minggu sore</b><span>15.00 &nbsp;•&nbsp; 16.00 &nbsp;•&nbsp; 17.00</span></div>
+      </div>
+    </section>
+
+    <section id="lokasi" class="section alt">
+      <div class="section-head"><p class="eyebrow">LOKASI</p><h2>Tempat latihan</h2></div>
+      <div class="location-grid">
+        <div class="location"><span>📍</span><div><h3>Modernland</h3><p>Kolam latihan Ambara Sail Aquatic</p></div></div>
+        <div class="location"><span>📍</span><div><h3>Pabuaran Residence</h3><p>Kolam latihan Ambara Sail Aquatic</p></div></div>
+      </div>
+    </section>
+
+    <section id="daftar" class="section register">
+      <div class="register-box">
+        <div><p class="eyebrow">PENDAFTARAN</p><h2>Siap mulai belajar renang?</h2><p>Isi formulir singkat, lalu kirim data pendaftaran melalui WhatsApp.</p></div>
+        <form onsubmit="sendWhatsApp(event)">
+          <input id="nama" required placeholder="Nama peserta">
+          <input id="usia" required placeholder="Usia">
+          <select id="programSelect"><option>Privat</option><option>Semi Privat</option><option>Group Class</option></select>
+          <select id="lokasiSelect"><option>Modernland</option><option>Pabuaran Residence</option></select>
+          <button class="btn primary" type="submit">Daftar via WhatsApp</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer><b>Ambara Sail Aquatic</b><span>Learn • Swim • Grow</span><a href="https://play.google.com/" target="_blank">Download aplikasi di PlayStore</a></footer>
+  <script src="script.js"></script>
+</body>
+</html>
