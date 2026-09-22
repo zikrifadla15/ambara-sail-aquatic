@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Ambara Sail Aquatic</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#17324d}
+header{background:#0b5fa5;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:21px}button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600}
+.logout{background:#fff;color:#0b5fa5}.wrap{max-width:1200px;margin:auto;padding:22px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #00000010}.card b{font-size:28px;display:block;margin-top:8px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{background:#dcecf8;color:#124c73}.tab.active{background:#0b5fa5;color:#fff}
+.panel{display:none;background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #00000010}.panel.active{display:block}
+.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px;flex-wrap:wrap}.primary{background:#0b5fa5;color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px;border-bottom:1px solid #e5eaf0;text-align:left}th{background:#f3f7fa}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}input,select,textarea{width:100%;padding:10px;border:1px solid #ccd7e0;border-radius:8px}textarea{min-height:80px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{background:#fff;max-width:650px;width:100%;border-radius:12px;padding:20px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.small{font-size:13px;color:#647789}.danger{background:#ffe3e3;color:#a11}.edit{background:#e5f2ff;color:#07558c}
+@media(max-width:800px){.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr}table{display:block;overflow:auto}}
+</style>
+</head>
+<body>
+<header><h1>🏊 Ambara Sail Aquatic — Admin Dashboard</h1><button class="logout" onclick="logout()">Logout</button></header>
+<div class="wrap">
+<div id="msg" class="small"></div>
+<div class="cards">
+<div class="card">👨‍🎓 Total Siswa<b id="cStudents">0</b></div>
+<div class="card">🏊 Total Coach<b id="cCoaches">0</b></div>
+<div class="card">📅 Jadwal<b id="cSchedules">0</b></div>
+<div class="card">💰 Pembayaran<b id="cPayments">0</b></div>
+</div>
+<div class="tabs">
+<button class="tab active" data-panel="students">👨‍🎓 Data Siswa</button>
+<button class="tab" data-panel="coaches">🏊 Coach</button>
+<button class="tab" data-panel="schedules">📅 Jadwal</button>
+<button class="tab" data-panel="attendance">✅ Absensi</button>
+<button class="tab" data-panel="payments">💰 Pembayaran</button>
+</div>
+
+<section id="students" class="panel active">
+<div class="toolbar"><h2>Data Siswa</h2><button class="primary" onclick="openModal('student')">+ Tambah Siswa</button></div>
+<table><thead><tr><th>Nama</th><th>Orang Tua</th><th>WhatsApp</th><th>Program</th><th>Paket</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="studentRows"></tbody></table>
+</section>
+
+<section id="coaches" class="panel">
+<div class="toolbar"><h2>Data Coach</h2><button class="primary" onclick="openModal('coach')">+ Tambah Coach</button></div>
+<table><thead><tr><th>Nama</th><th>WhatsApp</th><th>Spesialisasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="coachRows"></tbody></table>
+</section>
+
+<section id="schedules" class="panel">
+<div class="toolbar"><h2>Jadwal</h2><button class="primary" onclick="openModal('schedule')">+ Tambah Jadwal</button></div>
+<table><thead><tr><th>Tanggal</th><th>Jam</th><th>Siswa</th><th>Coach</th><th>Lokasi</th><th>Status</th></tr></thead><tbody id="scheduleRows"></tbody></table>
+</section>
+
+<section id="attendance" class="panel">
+<div class="toolbar"><h2>Absensi</h2><button class="primary" onclick="openModal('attendance')">+ Catat Absensi</button></div>
+<table><thead><tr><th>Tanggal</th><th>Siswa</th><th>Status</th><th>Catatan</th></tr></thead><tbody id="attendanceRows"></tbody></table>
+</section>
+
+<section id="payments" class="panel">
+<div class="toolbar"><h2>Pembayaran</h2><button class="primary" onclick="openModal('payment')">+ Tambah Pembayaran</button></div>
+<table><thead><tr><th>Tanggal</th><th>Siswa</th><th>Nominal</th><th>Metode</th><th>Paket</th><th>Status</th></tr></thead><tbody id="paymentRows"></tbody></table>
+</section>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle">Tambah Data</h2><div id="form"></div><div class="actions"><button onclick="closeModal()">Batal</button><button class="primary" onclick="saveModal()">Simpan</button></div></div></div>
+
+<script>
+const SUPABASE_URL="https://kahyuedvhhkeezolnkeh.supabase.co";
+const SUPABASE_KEY="sb_publishable_qaQ1yUb1JsF_nJRbY2b6mw_o0z9weT4";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentType=""; let students=[],coaches=[];
+
+async function check(){const {data:{user}}=await db.auth.getUser();if(!user){location.href="admin.html";return false}return true}
+function msg(t){document.getElementById("msg").textContent=t}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.panel).classList.add("active")});
+async function load(){
+ if(!(await check()))return;
+ const [s,c,sc,a,p]=await Promise.all([
+  db.from("students").select("*").order("created_at",{ascending:false}),
+  db.from("coaches").select("*").order("created_at",{ascending:false}),
+  db.from("schedules").select("*,students(name),coaches(name)").order("date",{ascending:false}),
+  db.from("attendance").select("*,students(name)").order("attendance_date",{ascending:false}),
+  db.from("payments").select("*,students(name)").order("payment_date",{ascending:false})
+ ]);
+ students=s.data||[]; coaches=c.data||[];
+ document.getElementById("cStudents").textContent=students.length;
+ document.getElementById("cCoaches").textContent=coaches.length;
+ document.getElementById("cSchedules").textContent=(sc.data||[]).length;
+ document.getElementById("cPayments").textContent=(p.data||[]).length;
+ renderStudents();renderCoaches();renderSchedules(sc.data||[]);renderAttendance(a.data||[]);renderPayments(p.data||[]);
+}
+const esc=x=>String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function renderStudents(){studentRows.innerHTML=students.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.parent_name)}</td><td>${esc(x.phone)}</td><td>${esc(x.program)}</td><td>${esc(x.package)}</td><td>${esc(x.status)}</td><td><button class="danger" onclick="del('students','${x.id}')">Hapus</button></td></tr>`).join("")||'<tr><td colspan="7">Belum ada data siswa.</td></tr>'}
+function renderCoaches(){coachRows.innerHTML=coaches.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.phone)}</td><td>${esc(x.specialization)}</td><td>${esc(x.status)}</td><td><button class="danger" onclick="del('coaches','${x.id}')">Hapus</button></td></tr>`).join("")||'<tr><td colspan="5">Belum ada coach.</td></tr>'}
+function renderSchedules(a){scheduleRows.innerHTML=a.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.start_time)}${x.end_time?" - "+esc(x.end_time):""}</td><td>${esc(x.students?.name)}</td><td>${esc(x.coaches?.name)}</td><td>${esc(x.location)}</td><td>${esc(x.status)}</td></tr>`).join("")||'<tr><td colspan="6">Belum ada jadwal.</td></tr>'}
+function renderAttendance(a){attendanceRows.innerHTML=a.map(x=>`<tr><td>${esc(x.attendance_date)}</td><td>${esc(x.students?.name)}</td><td>${esc(x.status)}</td><td>${esc(x.notes)}</td></tr>`).join("")||'<tr><td colspan="4">Belum ada absensi.</td></tr>'}
+function renderPayments(a){paymentRows.innerHTML=a.map(x=>`<tr><td>${esc(x.payment_date)}</td><td>${esc(x.students?.name)}</td><td>Rp ${Number(x.amount||0).toLocaleString("id-ID")}</td><td>${esc(x.payment_method)}</td><td>${esc(x.package)}</td><td>${esc(x.status)}</td></tr>`).join("")||'<tr><td colspan="6">Belum ada pembayaran.</td></tr>'}
+function openModal(t){currentType=t;modal.classList.add("show");let f="";
+if(t==="student"){modalTitle.textContent="Tambah Siswa";f=`<div class="formgrid"><input id="name" placeholder="Nama siswa*" required><input id="parent_name" placeholder="Nama orang tua"><input id="phone" placeholder="No. WhatsApp"><input id="program" placeholder="Program (Privat/Semi Privat/Group)"><input id="package" placeholder="Paket"><input id="address" placeholder="Alamat"><select id="status"><option>aktif</option><option>nonaktif</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
+if(t==="coach"){modalTitle.textContent="Tambah Coach";f=`<div class="formgrid"><input id="name" placeholder="Nama coach*" required><input id="phone" placeholder="No. WhatsApp"><input id="specialization" placeholder="Spesialisasi"><select id="status"><option>aktif</option><option>nonaktif</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
+if(t==="schedule"){modalTitle.textContent="Tambah Jadwal";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><select id="coach_id"><option value="">Tanpa coach</option>${coaches.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="date" type="date"><input id="start_time" type="time"><input id="end_time" type="time"><input id="location" placeholder="Lokasi"><input id="program" placeholder="Program"><select id="status"><option>terjadwal</option><option>selesai</option><option>batal</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
+if(t==="attendance"){modalTitle.textContent="Catat Absensi";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="attendance_date" type="date" value="${new Date().toISOString().slice(0,10)}"><select id="status"><option>hadir</option><option>izin</option><option>sakit</option><option>alpa</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
+if(t==="payment"){modalTitle.textContent="Tambah Pembayaran";f=`<div class="formgrid"><select id="student_id">${students.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select><input id="payment_date" type="date" value="${new Date().toISOString().slice(0,10)}"><input id="amount" type="number" placeholder="Nominal"><input id="payment_method" placeholder="Transfer/Cash"><input id="package" placeholder="Paket"><select id="status"><option>lunas</option><option>belum</option></select></div><textarea id="notes" placeholder="Catatan"></textarea>`}
+form.innerHTML=f}
+function closeModal(){modal.classList.remove("show")}
+const v=id=>document.getElementById(id)?.value||"";
+async function saveModal(){let data,table;if(currentType==="student"){table="students";data={name:v("name"),parent_name:v("parent_name"),phone:v("phone"),program:v("program"),package:v("package"),address:v("address"),status:v("status"),notes:v("notes")}}
+else if(currentType==="coach"){table="coaches";data={name:v("name"),phone:v("phone"),specialization:v("specialization"),status:v("status"),notes:v("notes")}}
+else if(currentType==="schedule"){table="schedules";data={student_id:v("student_id"),coach_id:v("coach_id")||null,date:v("date"),start_time:v("start_time"),end_time:v("end_time")||null,location:v("location"),program:v("program"),status:v("status"),notes:v("notes")}}
+else if(currentType==="attendance"){table="attendance";data={student_id:v("student_id"),attendance_date:v("attendance_date"),status:v("status"),notes:v("notes")}}
+else {table="payments";data={student_id:v("student_id"),payment_date:v("payment_date"),amount:Number(v("amount")),payment_method:v("payment_method"),package:v("package"),status:v("status"),notes:v("notes")}}
+const {error}=await db.from(table).insert(data);if(error){alert(error.message);return}closeModal();load()}
+async function del(table,id){if(!confirm("Hapus data ini?"))return;const {error}=await db.from(table).delete().eq("id",id);if(error)alert(error.message);else load()}
+async function logout(){await db.auth.signOut();location.href="admin.html"}
+load();
+</script>
+</body>
+</html>
