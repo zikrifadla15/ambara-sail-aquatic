@@ -1,7 +1,16 @@
 <!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portal Coach</title>
 <link rel="stylesheet" href="app.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="common.js"></script></head>
 <body><header class="top"><h1>🏊 Portal Coach — Ambara Sail Aquatic</h1><button class="btn secondary" onclick="logout()">Logout</button></header><main class="wrap">
-<div class="nav"><button class="active" data-tab="home">Dashboard</button><button data-tab="profile">👤 Profil</button><button data-tab="schedule">📅 Jadwal</button><button data-tab="students">👨‍🎓 Siswa</button><button data-tab="events">🏆 Sub Event</button><button data-tab="pools">🏊 Kolam</button><button data-tab="income">💰 Gaji/Pendapatan</button><button data-tab="notif">🔔 Reminder</button></div>
+<div class="nav" id="coachNav">
+<button type="button" class="active" onclick="switchCoachTab('home',this)">Dashboard</button>
+<button type="button" onclick="switchCoachTab('profile',this)">👤 Profil</button>
+<button type="button" onclick="switchCoachTab('schedule',this)">📅 Jadwal</button>
+<button type="button" onclick="switchCoachTab('students',this)">👨‍🎓 Siswa</button>
+<button type="button" onclick="switchCoachTab('events',this)">🏆 Sub Event</button>
+<button type="button" onclick="switchCoachTab('pools',this)">🏊 Kolam</button>
+<button type="button" onclick="switchCoachTab('income',this)">💰 Gaji/Pendapatan</button>
+<button type="button" onclick="switchCoachTab('notif',this)">🔔 Reminder</button>
+</div>
 <section id="home" class="panel active"><div class="grid" id="stats"></div><div class="form-card"><h2>Jadwal Terdekat</h2><div id="nextSchedule"></div></div></section>
 <section id="profile" class="panel"><div class="form-card"><h2>👤 Profil Coach</h2><div id="profileForm"></div></div></section>
 <section id="schedule" class="panel"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Jam</th><th>Siswa</th><th>Lokasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="scheduleRows"></tbody></table></div></section>
@@ -10,9 +19,23 @@
 <section id="income" class="panel"><div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Nominal</th><th>Tipe</th><th>Status</th><th>Catatan</th></tr></thead><tbody id="incomeRows"></tbody></table></div></section>
 <section id="notif" class="panel"><div id="notifList"></div></section>
 <div id="evalModal" class="login-card" style="display:none;position:fixed;inset:5%;z-index:30;overflow:auto;max-width:700px;margin:auto"><h2>Tambah Evaluasi</h2><input type="hidden" id="e_student"><label>Tanggal</label><input id="e_date" type="date"><div class="form-grid" id="scoreInputs"></div><label>Level</label><select id="e_level"><option>Beginner</option><option>Basic</option><option>Intermediate</option><option>Advanced</option></select><label>Nilai keseluruhan 0-100</label><input id="e_overall" type="number" min="0" max="100"><label>Catatan Coach</label><textarea id="e_notes"></textarea><div class="toolbar" style="margin-top:12px"><button class="btn secondary" onclick="closeEval()">Batal</button><button class="btn primary" onclick="saveEval()">Simpan Evaluasi</button></div></div><div id="toast" class="toast"></div></main>
+<style>
+.nav{position:relative;z-index:1000;pointer-events:auto}
+.nav button{position:relative;z-index:1001;pointer-events:auto;cursor:pointer}
+.panel{display:none}
+.panel.active{display:block}
+</style>
 <script>
+function switchCoachTab(tab,btn){
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  const panel=document.getElementById(tab);
+  if(panel) panel.classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 let ctx,coach,schedules=[],students=[];
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.tab).classList.add("active")});
+
 const skills=[["floating_score","Mengapung"],["breathing_score","Pernapasan"],["freestyle_score","Gaya bebas"],["breaststroke_score","Gaya dada"],["backstroke_score","Gaya punggung"],["butterfly_score","Gaya kupu-kupu"],["water_entry_score","Loncat/masuk kolam"],["confidence_score","Kepercayaan diri"]];
 function openEval(id){e_student.value=id;e_date.value=new Date().toISOString().slice(0,10);e_overall.value="";e_notes.value="";scoreInputs.innerHTML=skills.map(s=>`<div><label>${s[1]}</label><input id="${s[0]}" type="number" min="0" max="100" placeholder="0-100"></div>`).join("");evalModal.style.display="block"}
 function closeEval(){evalModal.style.display="none"}
