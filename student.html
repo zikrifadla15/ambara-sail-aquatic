@@ -25,68 +25,11 @@ async function init(){ctx=await requireLogin(["student"]);if(!ctx)return;
   db.from("pools").select("*").order("name"),
   db.from("notifications").select("*").eq("user_id",ctx.user.id).order("created_at",{ascending:false})
  ]);evals=ev.data||[];renderProfile();renderHome();renderEval();renderSchedules(sc.data||[]);renderAttendance(att.data||[]);renderPayments(pay.data||[]);renderEvents(events.data||[]);renderPools(pools.data||[]);renderNotes(notes.data||[])}
-
-function profilePhotoUrl(){
- if(student.photo_path){
-  return db.storage.from("profile-photos").getPublicUrl(student.photo_path).data.publicUrl+"?v="+Date.now();
- }
- return student.photo_url||"";
-}
-
-function renderProfile(){
- const photo=profilePhotoUrl();
- profileCard.innerHTML=`<div class="card profile-head"><div class="avatar">${photo?`<img class="avatar" src="${esc(photo)}" alt="Foto ${esc(student.name)}">`:"🏊"}</div><div><h2>${esc(student.name)}</h2><span class="badge">${esc(student.level||"Beginner")}</span><p class="small">${esc(student.program)} • ${esc(student.package)} • ID ${esc(student.student_code)}</p></div></div>`;
-
- profileForm.innerHTML=`<div class="form-grid">
- <div><label>Nama</label><input id="p_name" value="${esc(student.name)}"></div>
- <div><label>Usia</label><input id="p_age" type="number" min="1" max="120" value="${esc(student.age||"")}"></div>
- <div><label>No. HP</label><input id="p_phone" value="${esc(student.phone||"")}"></div>
- <div><label>Jenis Kelamin</label><select id="p_gender"><option value="">Pilih</option><option value="Laki-laki" ${student.gender==="Laki-laki"?"selected":""}>Laki-laki</option><option value="Perempuan" ${student.gender==="Perempuan"?"selected":""}>Perempuan</option></select></div>
- <div><label>Upload Foto Profil</label><input id="p_photo_file" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png"><div class="small">Pilih foto JPG/JPEG/PNG, maksimal 2 MB.</div></div>
- <div><label>Kontak Darurat</label><input id="p_emergency" value="${esc(student.emergency_contact||"")}"></div>
- <div class="full-span"><label>Alamat</label><input id="p_address" value="${esc(student.address||"")}"></div>
- <div class="full-span"><label>Biodata/Catatan</label><textarea id="p_bio">${esc(student.bio||student.notes||"")}</textarea></div>
- </div><button class="btn primary" style="margin-top:12px" onclick="saveProfile()">Simpan Profil</button>`;
-}
-
-async function uploadStudentPhoto(file){
- if(!file)return null;
- if(!["image/jpeg","image/png"].includes(file.type)){toast("Foto harus JPG, JPEG, atau PNG.",false);return false}
- if(file.size>2*1024*1024){toast("Ukuran foto maksimal 2 MB.",false);return false}
- const ext=file.type==="image/png"?"png":"jpg";
- const path=`students/${student.id}/profile.${ext}`;
- const {error}=await db.storage.from("profile-photos").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"});
- if(error){toast("Upload foto gagal: "+error.message,false);return false}
- return path;
-}
-
-async function saveProfile(){
- const file=document.getElementById("p_photo_file")?.files?.[0]||null;
- let photoPath=student.photo_path||null;
- if(file){
-  const uploaded=await uploadStudentPhoto(file);
-  if(uploaded===false)return;
-  photoPath=uploaded;
- }
- const data={
-  name:document.getElementById("p_name").value,
-  age:Number(document.getElementById("p_age").value)||null,
-  phone:document.getElementById("p_phone").value,
-  gender:document.getElementById("p_gender").value,
-  photo_path:photoPath,
-  emergency_contact:document.getElementById("p_emergency").value,
-  address:document.getElementById("p_address").value,
-  bio:document.getElementById("p_bio").value
- };
- const {error}=await db.from("students").update(data).eq("id",student.id);
- if(error){toast(error.message,false);return}
- if(file&&student.photo_path&&student.photo_path!==photoPath){await db.storage.from("profile-photos").remove([student.photo_path])}
- Object.assign(student,data);
- renderProfile();renderHome();
- toast(file?"Profil dan foto berhasil diperbarui.":"Profil berhasil diperbarui.");
-}
-
-function renderHome(){let last=evals.at(-1),scores=evals.map(x=>x.overall_score||0),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;stats.innerHTML=[["⭐ Nilai Terakhir",last?.overall_score??"-"],["📈 Rata-rata",avg||"-"],["🏆 Level",student.level||last?.level||"Beginner"],["📝 Evaluasi",evals.length]].map(x=>`<div class="card"><h3>${x[0]}</h3><div class="big">${esc(x[1])}</div></div>`).join("");chart.innerHTML=scores.length?`<div class="chart">${scores.map((s,i)=>`<div class="chart-col"><b>${s}</b><div class="chart-bar" style="height:${Math.max(4,s*2.1)}px"></div><span class="small">Eval ${i+1}</span></div>`).join("")}</div>`:"<p class='small'>Belum ada evaluasi.</p>";}
+function profilePhotoUrl(){if(student.photo_path){return db.storage.from("profile-photos").getPublicUrl(student.photo_path).data.publicUrl+"?v="+Date.now()}return student.photo_url||""}
+function renderProfile(){const photo=profilePhotoUrl();profileCard.innerHTML=`<div class="card profile-head"><div class="avatar">${photo?`<img class="avatar" src="${esc(photo)}" alt="Foto ${esc(student.name)}">`:"🏊"}</div><div><h2>${esc(student.name)}</h2><span class="badge">${esc(student.level||"Beginner")}</span><p class="small">${esc(student.program)} • ${esc(student.package)} • ID ${esc(student.student_code)}</p></div></div>`;profileForm.innerHTML=`<div class="form-grid"><div><label>Nama</label><input id="p_name" value="${esc(student.name)}"></div><div><label>Usia</label><input id="p_age" type="number" min="1" max="120" value="${esc(student.age||"")}"></div><div><label>No. HP</label><input id="p_phone" value="${esc(student.phone||"")}"></div><div><label>Jenis Kelamin</label><select id="p_gender"><option value="">Pilih</option><option value="Laki-laki" ${student.gender==="Laki-laki"?"selected":""}>Laki-laki</option><option value="Perempuan" ${student.gender==="Perempuan"?"selected":""}>Perempuan</option></select></div><div><label>Foto Profil</label><input id="p_photo_file" type="file" accept="image/jpeg,image/png"><div class="small">JPG/JPEG/PNG, maksimal 2 MB.</div></div><div><label>Kontak Darurat</label><input id="p_emergency" value="${esc(student.emergency_contact||"")}"></div><div class="full-span"><label>Alamat</label><input id="p_address" value="${esc(student.address||"")}"></div><div class="full-span"><label>Biodata/Catatan</label><textarea id="p_bio">${esc(student.bio||student.notes||"")}</textarea></div></div><button class="btn primary" style="margin-top:12px" onclick="saveProfile()">Simpan Profil</button>`}
+async function uploadStudentPhoto(file){if(!file)return null;if(!["image/jpeg","image/png"].includes(file.type)){toast("Foto harus JPG, JPEG, atau PNG.",false);return false}if(file.size>2*1024*1024){toast("Ukuran foto maksimal 2 MB.",false);return false}const ext=file.type==="image/png"?"png":"jpg";const path=`students/${student.id}/profile.${ext}`;const {error}=await db.storage.from("profile-photos").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"});if(error){toast("Upload foto gagal: "+error.message,false);return false}return path}
+async function saveProfile(){const file=p_photo_file.files?.[0]||null;let photoPath=student.photo_path||null;if(file){const uploaded=await uploadStudentPhoto(file);if(uploaded===false)return;photoPath=uploaded}const data={name:p_name.value,age:Number(p_age.value)||null,phone:p_phone.value,gender:p_gender.value,photo_path:photoPath,emergency_contact:p_emergency.value,address:p_address.value,bio:p_bio.value};const {error}=await db.from("students").update(data).eq("id",student.id);if(error){toast(error.message,false);return}if(file&&student.photo_path&&student.photo_path!==photoPath){await db.storage.from("profile-photos").remove([student.photo_path])}Object.assign(student,data);renderProfile();renderHome();toast(file?"Profil dan foto berhasil diperbarui.":"Profil berhasil diperbarui.")}}
+function renderHome(){let last=evals.at(-1),scores=evals.map(x=>x.overall_score||0),avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;stats.innerHTML=[["⭐ Nilai Terakhir",last?.overall_score??"-"],["📈 Rata-rata",avg||"-"],["🏆 Level",student.level||last?.level||"Beginner"],["🏊 Pertemuan",Number(student.meeting_count||0)+" kali"]].map(x=>`<div class="card"><h3>${x[0]}</h3><div class="big">${esc(x[1])}</div></div>`).join("");chart.innerHTML=scores.length?`<div class="chart">${scores.map((s,i)=>`<div class="chart-col"><b>${s}</b><div class="chart-bar" style="height:${Math.max(4,s*2.1)}px"></div><span class="small">Eval ${i+1}</span></div>`).join("")}</div>`:"<p class='small'>Belum ada evaluasi."; }
 function renderEval(){evalList.innerHTML=evals.slice().reverse().map(x=>`<div class="form-card"><div class="toolbar"><h3>Evaluasi ${fmtDate(x.evaluation_date)}</h3><span class="score">${x.overall_score??"-"}/100</span></div><p><b>Level:</b> ${esc(x.level||"-")} • Coach: ${esc(x.coaches?.name||"-")}</p><div class="bars">${[["Mengapung",x.floating_score],["Pernapasan",x.breathing_score],["Gaya bebas",x.freestyle_score],["Gaya dada",x.breaststroke_score],["Gaya punggung",x.backstroke_score],["Gaya kupu-kupu",x.butterfly_score],["Loncat/masuk kolam",x.water_entry_score],["Kepercayaan diri",x.confidence_score]].map(a=>`<div><div class="toolbar"><span>${a[0]}</span><b>${a[1]??"-"}</b></div><div class="bar"><i style="width:${a[1]||0}%"></i></div></div>`).join("")}</div><p><b>Catatan Coach:</b> ${esc(x.notes||"-")}</p></div>`).join("")||"<p>Belum ada evaluasi.</p>"}
 function renderSchedules(a){scheduleRows.innerHTML=a.map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.start_time||"")} ${x.end_time?"- "+esc(x.end_time):""}</td><td>${esc(x.coaches?.name||"-")}</td><td>${esc(x.location||"-")}</td><td>${esc(x.program||"-")}</td><td>${esc(x.status||"-")}</td></tr>`).join("")||"<tr><td colspan='6'>Belum ada jadwal.</td></tr>"}
 function renderAttendance(a){attendanceRows.innerHTML=a.map(x=>`<tr><td>${fmtDate(x.attendance_date)}</td><td>${esc(x.status)}</td><td>${esc(x.notes||"-")}</td></tr>`).join("")||"<tr><td colspan='3'>Belum ada riwayat.</td></tr>"}
